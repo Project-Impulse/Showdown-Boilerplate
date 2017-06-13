@@ -13,9 +13,9 @@ class Wtp {
  	this.room = room;
  	this.creator = user.userid;
 		this.mon = mon;
- 	this.hint1 = Tools.escapeHTML(hint1);
- 	this.hint2 = Tools.escapeHTML(hint2);
- 	this.hint3 = Tools.escapeHTML(hint3);
+ 	this.hint1 = (hint1);
+ 	this.hint2 = (hint2);
+ 	this.hint3 = (hint3);
  	this.guesses = [];
  	}
  
