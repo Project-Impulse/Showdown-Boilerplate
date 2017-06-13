@@ -72,16 +72,15 @@ exports.commands = {
             if (room.id !== 'casino') return this.errorReply('Casino games can only be played in the "Casino".');
             if (!this.canBroadcast()) return false;
             if (!this.canTalk()) return this.errorReply('/slots spin - Access Denied.');
-            
-            const amount = Db('money').get(user.userid, 0);
-            if (amount < 3) return this.errorReply('You don\'t have enough bucks to play this game. You need ' + (3 - amount) + currencyName(amount) + ' more.');
+            if (Db.money.get(user.userid, 3) < this.ammount return self.errorReply('You dont have enough money for spining the slots.');
+            if (this.amount < 3) return this.errorReply('You don\'t have enough bucks to play this game. You need ' + (3 - amount) + currencyName(amount) + ' more.');
             
             const result = spin();
             const chancePercentage = rng();
             const chancesGenerated = 70 + availableSlots.indexOf(result) * 3;
 
             if (chancePercentage >= chancesGenerated) {
-                Db('money').set(user.userid, (amount + slots[result]));
+                Db.money.set(user.userid, (this.amount + slots[result]));
                 return this.sendReplyBox(display(true, user.name, result, result, result));
             }
             
@@ -94,7 +93,7 @@ exports.commands = {
                 outcomeOne = spin();
             }
 
-            Db('money').set(user.userid, (amount - 3));
+            Db.money.set(user.userid, (this.amount - 3));
             return this.sendReplyBox(display(false, user.name, outcomeOne, outcomeTwo, outcomeThree));
         },
         '': function(target, room, user) {
