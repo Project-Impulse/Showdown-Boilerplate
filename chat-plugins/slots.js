@@ -72,8 +72,8 @@ exports.commands = {
             if (room.id !== 'casino') return this.errorReply('Casino games can only be played in the "Casino".');
             if (!this.canBroadcast()) return false;
             if (!this.canTalk()) return this.errorReply('/slots spin - Access Denied.');
-            if (Db.money.get(user.userid, 3) < this.ammount return self.errorReply('You dont have enough money for spining the slots.');
-            if (this.amount < 3) return this.errorReply('You don\'t have enough bucks to play this game. You need ' + (3 - amount) + currencyName(amount) + ' more.');
+            Db.money.get(user.userid, 3) < this.ammount return self.errorReply('You dont have enough money for spining the slots.');
+            if (this.amount < 3) return this.errorReply('You don\'t have enough bucks to play this game. You need ' + (3 - this.amount) + currencyName(amount) + ' more.');
             
             const result = spin();
             const chancePercentage = rng();
