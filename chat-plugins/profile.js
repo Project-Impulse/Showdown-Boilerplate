@@ -135,6 +135,12 @@ Profile.prototype.setfavoritepokemon = function (user) {
 	return label('Favorite Pokemon') + '<b><i>"' + setfavoritepokemon + '"</i></b>';
 };
 
+Profile.prototype.background = function (buddy) {
+	let bg = Db.backgrounds.get(buddy);
+	if (!Db.backgrounds.has(buddy)) return '<div>';
+	return '<div style="background:url(' + bg + ')">';
+};
+
 Profile.prototype.seen = function (timeAgo) {
 	if (this.isOnline) return label('Last Seen') + font('#2ECC40', 'Currently Online');
 	if (!timeAgo) return label('Last Seen') + 'Never';
@@ -150,7 +156,7 @@ Profile.prototype.title = function () {
 Profile.prototype.show = function (callback) {
 	let userid = toId(this.username);
 
-	return this.buttonAvatar() +
+	return this.background(userid) + this.buttonAvatar() +
 		SPACE + this.name() + SPACE + this.title() + BR +
 		SPACE + this.group() + BR +
 		SPACE + this.money(Db.money.get(userid, 0)) + BR +
@@ -178,6 +184,19 @@ exports.commands = {
 		if (!target) return this.errorReply('USAGE: /setfriendcode (code)');
 		Db.favoritepokemon.set(user.userid, target);
 		return this.sendReply('You have succesfully set your favorite pokemon to : ' + target);
+	},
+	
+		bg: 'setbg',
+	setbackground: 'setbg',
+	setbg: function (target, room, user) {
+		if (!this.can('broadcast')) return false;
+		let parts = target.split(',');
+		if (!parts[1]) return this.errorReply('USAGE: /setbackground (user), (link)');
+		let targ = parts[0].toLowerCase().trim();
+		let link = parts[1].trim();
+		Db.backgrounds.set(targ, link);
+		this.sendReply('This users background has been set to : ');
+		this.parse('/profile ' + targ);
 	},
 	
 	customtitle: function (target, room, user) {
