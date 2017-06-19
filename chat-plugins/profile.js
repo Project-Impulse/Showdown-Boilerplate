@@ -130,9 +130,9 @@ Profile.prototype.name = function () {
 };
 
 Profile.prototype.setfavoritepokemon = function (user) {
-	let setfavoritepokemon = Db.favoritepokemon.get(user);
-	if (!Db.favoritepokemon.has(user)) return label('Favorite Pokemon') + 'This user does not have a favorite pokemon set.';
-	return label('Favorite Pokemon') + '<b><i>"' + setfavoritepokemon + '"</i></b>';
+	let setfavoritepokemon = Db.crush.get(user);
+	if (!Db.crush.has(user)) return label('Crush') + 'This user does not have a crush set.';
+	return label('Crush') + '<b><i>"' + setfavoritepokemon + '"</i></b>';
 };
 
 Profile.prototype.background = function (buddy) {
@@ -179,11 +179,10 @@ exports.commands = {
 		this.sendReplyBox(profile.show());
 	},
 	
-	setfavoritepokemon: 'setfp',
-        'setfp': function (target, room, user) {
-		if (!target) return this.errorReply('USAGE: /setfriendcode (code)');
-		Db.favoritepokemon.set(user.userid, target);
-		return this.sendReply('You have succesfully set your favorite pokemon to : ' + target);
+	'setcrush': function (target, room, user) {
+		if (!target) return this.errorReply('USAGE: /setcrush (code)');
+		Db.crush.set(user.userid, target);
+		return this.sendReply('You have succesfully set your crush  to : ' + target);
 	},
 	
 		bg: 'setbg',
