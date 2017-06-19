@@ -5,6 +5,7 @@ let color = require('../config/color');
 let moment = require('moment');
 
 let BR = '<br>';
+let ServerIP = 'dedicatedrpsever-lustyash.c9users.io';
 let SPACE = '&nbsp;';
 let profileColor = '#24678d';
 let trainersprites = [1, 2, 101, 102, 169, 170, 265, 266, 168];
@@ -22,7 +23,7 @@ function Profile(isOnline, user, image) {
 	this.image = image;
 
 	this.username = Chat.escapeHTML(this.isOnline ? this.user.name : this.user);
-	this.url = Config.avatarurl || '';
+	this.url = 'http://dedicatedrpsever-lustyash.c9users.io';
 }
 
 /**
@@ -92,7 +93,7 @@ function currencyName(amount) {
 
 Profile.prototype.avatar = function () {
 	if (this.isOnline) {
-		if (typeof this.image === 'string') return img(this.url + ':' + Config.port + '/avatars/' + this.image);
+		if (typeof this.image === 'string') return img(this.url + ':80/avatars/' + this.image);
 		return img('http://play.pokemonshowdown.com/sprites/trainers/' + this.image + '.png');
 	}
 	for (let name in Config.customAvatars) {
@@ -136,7 +137,7 @@ Profile.prototype.seen = function (timeAgo) {
 
 Profile.prototype.title = function () {
 	let title = Db.TitleDB.get(toId(toId(this.user)));
-	if (typeof title !== 'undefined' && title !== null)  return ' (<font color=#' + title[0] + '><b>' + Tools.escapeHTML(title[1]) + '</b></font>)';
+	if (typeof title !== 'undefined' && title !== null)  return ' (<font color=#' + title[0] + '><b>' + Chat.escapeHTML(title[1]) + '</b></font>)';
 	return '';
 };
 
@@ -187,7 +188,7 @@ exports.commands = {
 			title[1] = Chat.escapeHTML(parts.slice(3).join(",").trim());
 			if (title[1].length > 30) return this.errorReply("Custom titles cannot be longer than 30 characters.");
 			Db.TitleDB.set(toId(userid), title);
-			Users.get(userid).popup('|modal||html|<font color="red"><strong>ATTENTION!</strong></font><br /> You have received a custom title from <b><font color="' + color(user.userid) + '">' + Tools.escapeHTML(user.name) + '</font></b>: ' + '<font color=' + title[0] + '> <b>' + Tools.escapeHTML(title[1]) + '</b></font>');
+			Users.get(userid).popup('|modal||html|<font color="red"><strong>ATTENTION!</strong></font><br /> You have received a custom title from <b><font color="' + color(user.userid) + '">' + Chat.escapeHTML(user.name) + '</font></b>: ' + '<font color=' + title[0] + '> <b>' + Chat.escapeHTML(title[1]) + '</b></font>');
 			this.sendReply("Usertitle set.");
 			break;
 		default:
