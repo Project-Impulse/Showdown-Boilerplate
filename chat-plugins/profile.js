@@ -129,6 +129,12 @@ Profile.prototype.name = function () {
 	return label('Name') + bold(font(color(toId(this.username)), this.username));
 };
 
+Profile.prototype.setfavoritepokemon = function (user) {
+	let setfavoritepokemon = Db.favoritepokemon.get(user);
+	if (!Db.favoritepokemon.has(user)) return label('Favorite Pokemon') + 'This user does not have a favorite pokemon set.';
+	return label('Favorite Pokemon') + '<b><i>"' + setfavoritepokemon + '"</i></b>';
+};
+
 Profile.prototype.seen = function (timeAgo) {
 	if (this.isOnline) return label('Last Seen') + font('#2ECC40', 'Currently Online');
 	if (!timeAgo) return label('Last Seen') + 'Never';
@@ -148,7 +154,8 @@ Profile.prototype.show = function (callback) {
 		SPACE + this.name() + SPACE + this.title() + BR +
 		SPACE + this.group() + BR +
 		SPACE + this.money(Db.money.get(userid, 0)) + BR +
-		SPACE + this.seen(Db.seen.get(userid)) +
+		SPACE + this.seen(Db.seen.get(userid)) + BR +
+		SPACE + this.setfavoritepokemon(userid) + BR +
 		'<br clear="all">';
 };
 
@@ -164,6 +171,13 @@ exports.commands = {
 			profile = new Profile(true, targetUser, targetUser.avatar);
 		}
 		this.sendReplyBox(profile.show());
+	},
+	
+	setfavoritepokemon: 'setfp',
+        'setfp': function (target, room, user) {
+		if (!target) return this.errorReply('USAGE: /setfriendcode (code)');
+		Db.favoritepokemon.set(user.userid, target);
+		return this.sendReply('You have succesfully set your favorite pokemon to : ' + target);
 	},
 	
 	customtitle: function (target, room, user) {
