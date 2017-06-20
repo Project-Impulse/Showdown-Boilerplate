@@ -201,6 +201,22 @@ Profile.prototype.type = function (user) {
 	return label('Type') + type;
 };
 
+Profile.prototype.badges = function (user) {
+	let badgecss = ';border:none;background:none;';
+	let badges = Db.badges.get(user);
+	if (!Db.badges.has(user) && Db.music.has(user)) return '<br>';
+	let badgeDisplay = '<br><br><div style="' + badgecss + '"><center>';
+	if (!Db.badges.has(pal)) return '';
+	for (let i = 0; i < badges.length; i++) {
+		let img = Db.badgelist.get([badges[i], 'img']);
+		let desc = Db.badgelist.get([badges[i], 'desc']);
+		let id = Db.badgelist.get([badges[i], 'name']);
+		badgeDisplay += '<button name="send" style="background:transparent;border:none;" value="/badge info, ' + id + '"><img src="' + img + '" title="' + id + ' : ' + desc + '"></button>';
+	}
+	badgeDisplay += '</center></div>';
+	return badgeDisplay;
+};
+
 Profile.prototype.seen = function (timeAgo) {
 	if (this.isOnline) return label('Last Seen') + font('#2ECC40', 'Currently Online');
 	if (!timeAgo) return label('Last Seen') + 'Never';
@@ -221,7 +237,8 @@ Profile.prototype.show = function (callback) {
 		SPACE + this.group() + BR +
 		SPACE + this.money(Db.money.get(userid, 0)) + BR +
 		SPACE + this.seen(Db.seen.get(userid)) + BR +
-		SPACE + this.type(userid) + SPACE + this.pokemon(userid) + BR +
+		SPACE + this.type(userid) + BR + 
+		SPACE + this.pokemon(userid) + BR + + SPACE + this.badges(userid) +
 		'<br clear="all">';
 };
 
@@ -252,6 +269,105 @@ exports.commands = {
 		Db.backgrounds.set(targ, link);
 		this.sendReply('This users background has been set to : ');
 		this.parse('/profile ' + targ);
+	},
+	
+		'deletebackground': 'deletebg',
+	deletebg: function (target, room, user) {
+		if (!this.can('broadcast')) return false;
+		let targ = target.toLowerCase();
+		if (!target) return this.errorReply('USAGE: /deletebackground (user)');
+		if (!Db.backgrounds.has(targ)) return this.errorReply('This user does not have a custom background.');
+		Db.('backgrounds').delete(targ);
+		this.sendReply('This users background has deleted.');
+	},
+	
+		badge: function (target, room, user) {
+		let parts = target.split(',');
+		let acceptable = ['set', 'take', 'delete', 'add', 'list', 'info'];
+		if (!acceptable.includes(parts[0])) return this.parse('/badgehelp');
+		switch (parts[0]) {
+		case 'add':
+			let id = parts[1].trim().toLowerCase();
+			let name = parts[1].trim();
+			let img = parts[2].trim();
+			let desc = parts[3].trim();
+			if (!parts[3]) return this.errorReply('USAGE: /badge add, (name), (img), Description.');
+			if (Db.badgelist.has(id)) return this.errorReply('There is a badge with this name already.');
+			Db.badgelist
+				.set([id, 'name'], name)
+				.set([id, 'img'], img)
+				.set([id, 'desc'], desc);
+			let total = Db.badgelist.get('all');
+			if (!Db.badgelist.has('all')) total = [];
+			total.push(id);
+			Db.badgelist.set('all', total);
+			this.sendReplyBox('This badge has been successfully added.');
+			break;
+		case 'delete':
+			let targbadge = parts[1].trim().toLowerCase();
+			if (parts[2]) return this.errorReply('USAGE: /badge delete, (name)');
+			if (!Db.badgelist.has(targbadge)) return this.errorReply('This badge does not exist.');
+			Db.badgelist.delete(targbadge);
+			let allbadgez = Db.badgelist.get('all');
+			allbadgez = allbadgez.filter(b => b !== targbadge);
+			Db.badgehlist.set('all', allbadgez);
+			this.errorReply('This badge has been deleted.');
+			let badgeUserObject = Db.('userBadges').object();
+			let users = Object.keys(badgeUserObject);
+			users.forEach(u => Db.('userBadges').set(u, (badgeUserObject[u].filter(b => b !== targbadge))));
+			break;
+		case 'set':
+			let targUser = parts[1].trim().toLowerCase();
+			let badge = parts[2].trim();
+			if (!Db.badgelist.has(badge)) return this.errorReply('This badge does not exist.');
+			if (!parts[2]) return this.errorReply('USAGE: /badge set, (user), (badge name)');
+			let userBadges = Db.badges.get(targUser);
+			if (!Db.badges.has(targUser)) userBadges = [];
+			userBadges.push(badge);
+			Db('badges').set(targUser, userBadges);
+			let kekbadge = Db.badgelist.get([badge, 'img']);
+			this.sendReply('This user has been succesfully given the ' + badge + ' badge.');
+			Users(targUser).popup('|html|You have been given the <img src="' + kekbadge + '"> Badge.');
+			break;
+		case 'take':
+			let usertarget = parts[1].trim().toLowerCase();
+			let hasbadges = Db.badges.get(usertarget);
+			let deletebadge = parts[2].trim().toLowerCase();
+			let imgofbadge = Db.badgelist.get([deletebadge, 'img']);
+			if (!parts[2]) this.errorReply('USAGE: /badge take, (user), (badge name).');
+			hasbadges = hasbadges.filter(b => b !== deletebadge);
+			Db.badges.set(usertarget, hasbadges);
+			this.sendReply('This user has been stripped of the ' + deletebadge + ' badge.');
+			Users(usertarget).popup('|html|You have been stripped of the the ' + imgofbadge + ' Badge.');
+			break;
+		case 'list':
+			if (!this.runBroadcast()) return;
+			let BadgeList = '<table border="1" width="100%" cellpadding="5px" cellspacing="0"><th>Badge Img</th><th>Badge Name</th><th>Badge Description</th>';
+			let allbadges = Db('badgelist').get('all');
+			for (let i = 0; i < allbadges.length; i++) {
+				let badgeimg = Db.badgelist.get([allbadges[i], 'img']);
+				let badgedesc = Db.badgelist.get([allbadges[i], 'desc']);
+				let badgename = Db.badgelist.get([allbadges[i], 'name']);
+				BadgeList += '<tr>';
+				BadgeList += '<td><center><button style="background:transparent;border:none;" name="send" value="/badge info, ' + badgename + '"><img src="' + badgeimg + '" title="' + badgename + ' : ' + badgedesc + '"></button></center></td>';
+				BadgeList += '<td><b>' + badgename + '</b></td>';
+				BadgeList += '<td>' + badgedesc + '</td>';
+				BadgeList += '</tr>';
+			}
+			this.sendReply('|html|' + BadgeList);
+			break;
+		case 'info':
+			if (!this.runBroadcast()) return;
+			if (!parts[1]) return this.errorReply('USAGE: /badge info, (badge name)');
+			let infobadge = parts[1].trim().toLowerCase();
+			let all = Db.badgelist.get('all');
+			if (!all.includes(infobadge)) return this.errorReply('This badge does not exist.');
+			let imginfo = Db.badgelist.get([infobadge, 'img']);
+			let infodesc = Db.badgelist.get([infobadge, 'desc']);
+			let infoname = Db.badgelist.get([infobadge, 'name']);
+			this.sendReplyBox('<img src="' + imginfo + '">' + SPACE + infoname + ' : ' + infodesc);
+			break;
+		}
 	},
 	
 		type: function (target) {
