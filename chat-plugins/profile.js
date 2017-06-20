@@ -221,7 +221,7 @@ Profile.prototype.show = function (callback) {
 		SPACE + this.group() + BR +
 		SPACE + this.money(Db.money.get(userid, 0)) + BR +
 		SPACE + this.seen(Db.seen.get(userid)) + BR +
-		SPACE + this.type(userid) +
+		SPACE + this.type(userid) + SPACE + this.pokemon(userid) + BR +
 		'<br clear="all">';
 };
 
