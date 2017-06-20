@@ -129,12 +129,6 @@ Profile.prototype.name = function () {
 	return label('Name') + bold(font(color(toId(this.username)), this.username));
 };
 
-Profile.prototype.setfavoritepokemon = function (user) {
-	let setfavoritepokemon = Db.crush.get(user);
-	if (!Db.crush.has(user)) return label('Crush') + 'This user does not have a crush set.';
-	return label('Crush') + '<b><i>"' + setfavoritepokemon + '"</i></b>';
-};
-
 Profile.prototype.background = function (user) {
 	let bg = Db.backgrounds.get(user);
 	if (!Db.backgrounds.has(buddy)) return '<div>';
@@ -221,7 +215,7 @@ Profile.prototype.show = function (callback) {
 		SPACE + this.group() + BR +
 		SPACE + this.money(Db.money.get(userid, 0)) + BR +
 		SPACE + this.seen(Db.seen.get(userid)) + BR +
-		SPACE + this.type(userid) + SPACE + +SPACE + this.setfavoritepokemon(userid) + BR +
+		SPACE + this.type(userid) +
 		'<br clear="all">';
 };
 
@@ -239,11 +233,7 @@ exports.commands = {
 		this.sendReplyBox(profile.show());
 	},
 	
-	'setcrush': function (target, room, user) {
-		if (!target) return this.errorReply('USAGE: /setcrush (code)');
-		Db.crush.set(user.userid, target);
-		return this.sendReply('You have succesfully set your crush  to : ' + target);
-	},
+		
 	
 		bg: 'setbg',
 	setbackground: 'setbg',
