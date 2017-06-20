@@ -135,10 +135,70 @@ Profile.prototype.setfavoritepokemon = function (user) {
 	return label('Crush') + '<b><i>"' + setfavoritepokemon + '"</i></b>';
 };
 
-Profile.prototype.background = function (buddy) {
-	let bg = Db.backgrounds.get(buddy);
+Profile.prototype.background = function (user) {
+	let bg = Db.backgrounds.get(user);
 	if (!Db.backgrounds.has(buddy)) return '<div>';
 	return '<div style="background:url(' + bg + ')">';
+};
+
+Profile.prototype.type = function (user) {
+	let type = Db.type.get(user);
+	if (!Db.type.has(user)) return label('Type') + 'None';
+	if (type === 'Grass') {
+		type = '<font color="#008000"><b><i>Grass</i></b></font>';
+	}
+	if (type === 'Poison') {
+		type = '<font color="#800080"><b><i>Poison</i></b></font>';
+	}
+	if (type === 'Fire') {
+		type = '<font color="#ff0000"><b><i>Fire</i></b></font>';
+	}
+	if (type === 'Water') {
+		type = '<font color="#0000cd"><b><i>Water</i></b></font>';
+	}
+	if (type === 'Electric') {
+		type = '<font color="#ffff00"><b><i>Electric</i></b></font>';
+	}
+	if (type === 'Psychic') {
+		type = '<font color="#da70d6"><b><i>Psychic</i></b></font>';
+	}
+	if (type === 'Normal') {
+		type = '<font color="#ffffff"><b><i>Normal</i></b></font>';
+	}
+	if (type === 'Ground') {
+		type = '<font color="#ff8c00"><b><i>Ground</i></b></font>';
+	}
+	if (type === 'Ice') {
+		type = '<font color="#87cefa"><b><i>Ice</i></b></font>';
+	}
+	if (type === 'Rock') {
+		type = '<font color="#ao552d"><b><i>Rock</i></b></font>';
+	}
+	if (type === 'Dragon') {
+		type = '<font color="#4b0082"><b><i>Dragon</i></b></font>';
+	}
+	if (type === 'Bug') {
+		type = '<font color="#adff2f"><b><i>Bug</i></b></font>';
+	}
+	if (type === 'Dark') {
+		type = '<font color="#8b4513"><b><i>Dark</i></b></font>';
+	}
+	if (type === 'Fighting') {
+		type = '<font color="#800000"><b><i>Fighting</i></b></font>';
+	}
+	if (type === 'Flying') {
+		type = '<font color="#87ceeb"><b><i>Flying</i></b></font>';
+	}
+	if (type === 'Ghost') {
+		type = '<font color="#8a2be2"><b><i>Ghost</i></b></font>';
+	}
+	if (type === 'Steel') {
+		type = '<font color="#c0c0c0"><b><i>Steel</i></b></font>';
+	}
+	if (type === 'Fairy') {
+	type = '<font color="#ff69b4"><b><i>Fairy</i></b></font>';
+	}
+	return label('Type') + type;
 };
 
 Profile.prototype.seen = function (timeAgo) {
@@ -161,7 +221,7 @@ Profile.prototype.show = function (callback) {
 		SPACE + this.group() + BR +
 		SPACE + this.money(Db.money.get(userid, 0)) + BR +
 		SPACE + this.seen(Db.seen.get(userid)) + BR +
-		SPACE + this.setfavoritepokemon(userid) + BR +
+		SPACE + this.type(userid) + SPACE + +SPACE + this.setfavoritepokemon(userid) + BR +
 		'<br clear="all">';
 };
 
@@ -197,6 +257,39 @@ exports.commands = {
 		this.sendReply('This users background has been set to : ');
 		this.parse('/profile ' + targ);
 	},
+	
+		type: function (target) {
+		let parts = target.split(', ');
+		if (!this.can('broadcast')) return false;
+		let user = parts[1];
+		if (!user) return this.parse("/help type");
+		if (!parts[0]) return this.parse("/help type");
+		if (hasUpperCase(user) && parts[0] === 'set') { //Ensure the username isn't capitalized
+			return this.parse("/type " + parts[0] + ", " + parts[1].toLowerCase() + ", " + parts[2] + ", " + parts[3]); // Re-Parse the command with the username lowercased
+		}
+
+		switch (parts[0]) {
+		case 'set':
+			let hex = parts[2];
+			let text = parts[3];
+			let types = ['Normal', 'Grass', 'Poison', 'Fire', 'Water', 'Bug', 'Flying', 'Electric', 'Rock', 'Ground', 'Steel', 'Ice', 'Dragon', 'Fairy', 'Psychic', 'Fighting', 'Dark', 'Ghost'];
+			if (!hex || !text) return this.errorReply("Ensure you have set a type and hex");
+
+			let type = '<font color = ' + hex + '><b>' + text + '</b></font>';
+			if (Db.type.has(user)) return false;
+			Db.type.set(user, type);
+			Users(user).send('|popup| You have recieved type.');
+			this.sendReply('|html|You have set a type.');
+			break;
+		case 'delete':
+			if (!Db.type.has(user)) return false;
+			Db.type.delete(user);
+			Users(user).send('|popup| Your type has been removed.');
+			this.sendReply("You have removed " + user + "s' type.");
+			break;
+		default:
+			this.parse("/help type");
+		}
 	
 	customtitle: function (target, room, user) {
 		let parts = target.split(',');
